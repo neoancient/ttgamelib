@@ -9,7 +9,7 @@ val serializationVersion: String by project
 val commonmarkVersion: String by project
 val slf4jVersion: String by project
 val junitVersion: String by project
-val mockitoVersion: String by project
+val mocckVersion: String by project
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -31,7 +31,8 @@ dependencies {
     runtimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation("org.mockito:mockito-core:$mockitoVersion")
+    testImplementation("io.mockk:mockk:$mocckVersion")
+    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
 }
 
 kotlin {

@@ -27,7 +27,7 @@ package ttgamelib
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
+import io.mockk.*
 
 private class TestEntity : Entity {
     override var unitId: Int = -1
@@ -92,19 +92,23 @@ internal class AbstractGameTest {
 
     @Test
     fun addPlayerNotifiesListener() {
-        val listener: GameListener = Mockito.mock(GameListener::class.java)
+        val listener = mockk<GameListener>(relaxUnitFun = true)
         game.addListener(listener)
         val p = game.newPlayer(0, "Test Player")
-        Mockito.verify(listener, Mockito.times(1)).playerAdded(p.id)
+        verify {
+            listener.playerAdded(p.id)
+        }
     }
 
     @Test
     fun removePlayerNotifiesListener() {
-        val listener: GameListener = Mockito.mock(GameListener::class.java)
+        val listener = mockk<GameListener>(relaxUnitFun = true)
         game.addListener(listener)
         val p = game.newPlayer(0, "Test Player")
         game.removePlayer(p.id)
-        Mockito.verify(listener, Mockito.times(1)).playerAdded(p.id)
+        verify {
+            listener.playerRemoved(p.id)
+        }
     }
 
     @Test

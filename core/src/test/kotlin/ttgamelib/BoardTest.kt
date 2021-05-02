@@ -24,8 +24,9 @@
 
 package ttgamelib
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import java.util.HashMap
 import kotlin.math.sqrt
 
@@ -38,10 +39,10 @@ internal class BoardTest {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords = board.createCoords(5, 5)
         val (terrain, depth, elevation) = board[coords]
-        Assertions.assertAll(
-            { Assertions.assertEquals(board.defaultHex.terrain, terrain) },
-            { Assertions.assertEquals(board.defaultHex.depth, depth) },
-            { Assertions.assertEquals(board.defaultHex.elevation, elevation) })
+        assertAll(
+            { assertEquals(board.defaultHex.terrain, terrain) },
+            { assertEquals(board.defaultHex.depth, depth) },
+            { assertEquals(board.defaultHex.elevation, elevation) })
     }
 
     @Test
@@ -51,10 +52,10 @@ internal class BoardTest {
             defaultHex = Terrain(TerrainType.ROCKS, 0, 2)
         )
         val (terrain, depth, elevation) = testBoard.getHex(4, 4)
-        Assertions.assertAll(
-            { Assertions.assertEquals(terrain, TerrainType.ROCKS) },
-            { Assertions.assertEquals(depth, 0) },
-            { Assertions.assertEquals(elevation, 2) })
+        assertAll(
+            { assertEquals(terrain, TerrainType.ROCKS) },
+            { assertEquals(depth, 0) },
+            { assertEquals(elevation, 2) })
     }
 
     @Test
@@ -66,10 +67,10 @@ internal class BoardTest {
             10, 10, initHexes = initMap,
             defaultHex = Terrain(TerrainType.SEA, DEPTH_DEEP_SEA, 0)
         )
-        Assertions.assertAll(
-            { Assertions.assertEquals(testBoard.getHex(1, 1).terrain, TerrainType.ROCKS) },
-            { Assertions.assertEquals(testBoard.getHex(1, 2).terrain, TerrainType.REEF) },
-            { Assertions.assertEquals(testBoard.getHex(4, 4).terrain, TerrainType.SEA) })
+        assertAll(
+            { assertEquals(testBoard.getHex(1, 1).terrain, TerrainType.ROCKS) },
+            { assertEquals(testBoard.getHex(1, 2).terrain, TerrainType.REEF) },
+            { assertEquals(testBoard.getHex(4, 4).terrain, TerrainType.SEA) })
     }
 
     @Test
@@ -77,7 +78,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = board.createCoords(4, 6)
-        Assertions.assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
     }
 
     @Test
@@ -85,7 +86,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        Assertions.assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
     }
 
     @Test
@@ -93,7 +94,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, oddOffset = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(V_DIR_NE)
-        Assertions.assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
     }
 
     @Test
@@ -101,7 +102,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = board.createCoords(6, 4)
-        Assertions.assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
     }
 
     @Test
@@ -109,7 +110,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(H_DIR_NE)
-        Assertions.assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
     }
 
     @Test
@@ -117,7 +118,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, verticalGrid = false, oddOffset = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(H_DIR_NW)
-        Assertions.assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
     }
 
     @Test
@@ -125,7 +126,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        Assertions.assertEquals(
+        assertEquals(
             board.getCartesianX(coords1) + sqrt(3.0) / 2.0,
             board.getCartesianX(coords2), 0.001
         )
@@ -136,7 +137,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        Assertions.assertEquals(
+        assertEquals(
             board.getCartesianY(coords1) + 0.5,
             board.getCartesianY(coords2), 0.001
         )
@@ -147,7 +148,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(H_DIR_SE)
-        Assertions.assertEquals(
+        assertEquals(
             board.getCartesianX(coords1) + 0.5,
             board.getCartesianX(coords2), 0.001
         )
@@ -158,7 +159,7 @@ internal class BoardTest {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(H_DIR_SE)
-        Assertions.assertEquals(
+        assertEquals(
             board.getCartesianY(coords1) + sqrt(3.0) / 2.0,
             board.getCartesianY(coords2), 0.001
         )
