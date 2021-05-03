@@ -24,42 +24,31 @@
 
 package ttgamelib
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.doubles.plusOrMinus
+import io.kotest.matchers.shouldBe
 import java.util.HashMap
 import kotlin.math.sqrt
 
-internal class BoardTest {
+internal class BoardTest : FunSpec({
 
-    private val defaultHex = Terrain(TerrainType.GRASSLAND, 0, 0)
+    val defaultHex = Terrain(TerrainType.GRASSLAND, 0, 0)
 
-    @Test
-    fun defaultHexFactoryGeneratesCorrectHex() {
-        val board = HexBoard(10, 10, defaultHex = defaultHex)
-        val coords = board.createCoords(5, 5)
-        val (terrain, depth, elevation) = board[coords]
-        assertAll(
-            { assertEquals(board.defaultHex.terrain, terrain) },
-            { assertEquals(board.defaultHex.depth, depth) },
-            { assertEquals(board.defaultHex.elevation, elevation) })
-    }
-
-    @Test
-    fun testHexFactory() {
+    test("default hex factory should generate correct hex") {
         val testBoard = HexBoard(
             10, 10,
             defaultHex = Terrain(TerrainType.ROCKS, 0, 2)
         )
         val (terrain, depth, elevation) = testBoard.getHex(4, 4)
-        assertAll(
-            { assertEquals(terrain, TerrainType.ROCKS) },
-            { assertEquals(depth, 0) },
-            { assertEquals(elevation, 2) })
+
+        terrain shouldBe TerrainType.ROCKS
+        depth shouldBe 0
+        elevation shouldBe 2
     }
 
-    @Test
-    fun testTerrainInitialization() {
+    test("hex lookup should return initialized values") {
         val initMap: MutableMap<HexCoords, Terrain> = HashMap()
         initMap[HexCoords(1, 1, true)] = Terrain(TerrainType.ROCKS, 0, 4)
         initMap[HexCoords(1, 2, true)] = Terrain(TerrainType.REEF, 2, 0)
@@ -67,101 +56,95 @@ internal class BoardTest {
             10, 10, initHexes = initMap,
             defaultHex = Terrain(TerrainType.SEA, DEPTH_DEEP_SEA, 0)
         )
-        assertAll(
-            { assertEquals(testBoard.getHex(1, 1).terrain, TerrainType.ROCKS) },
-            { assertEquals(testBoard.getHex(1, 2).terrain, TerrainType.REEF) },
-            { assertEquals(testBoard.getHex(4, 4).terrain, TerrainType.SEA) })
+
+        forAll(
+            row(1, 1, TerrainType.ROCKS),
+            row(1, 2, TerrainType.REEF),
+            row(4, 4, TerrainType.SEA)
+        ) { col, row, terrain ->
+            testBoard.getHex(col, row).terrain shouldBe terrain
+        }
     }
 
-    @Test
-    fun verticalGridHasSameOffsetXForSameColumn() {
+    test("vertical grid should have same offsetX for same column") {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = board.createCoords(4, 6)
-        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+
+        board.getOffsetCoordX(coords1) shouldBe board.getOffsetCoordX(coords2)
     }
 
-    @Test
-    fun testVerticalGridOffsetYOddOffset() {
+    test("vertical grid with odd offset should place odd columns lower") {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+
+        board.getOffsetCoordY(coords1) shouldBe board.getOffsetCoordY(coords2)
     }
 
-    @Test
-    fun testVerticalGridOffsetYEvenOffset() {
+    test("vertical grid with odd offset should place odd columns higher") {
         val board = HexBoard(10, 10, oddOffset = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(V_DIR_NE)
-        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+
+        board.getOffsetCoordY(coords1) shouldBe board.getOffsetCoordY(coords2)
     }
 
-    @Test
-    fun horizontalGridHasSameOffsetYForSameRow() {
+    test("vertical grid should have same offsetY for same row") {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = board.createCoords(6, 4)
-        assertEquals(board.getOffsetCoordY(coords1), board.getOffsetCoordY(coords2))
+
+        board.getOffsetCoordY(coords1) shouldBe board.getOffsetCoordY(coords2)
     }
 
-    @Test
-    fun testHorizontalGridOffsetXOddOffset() {
+    test("horizontal grid with odd offset should place odd rows to the right") {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(H_DIR_NE)
-        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+
+        board.getOffsetCoordX(coords1) shouldBe board.getOffsetCoordX(coords2)
     }
 
-    @Test
-    fun testHorizontalGridOffsetXEvenOffset() {
+    test("horizontal grid with even offset should place odd rows to the left") {
         val board = HexBoard(10, 10, verticalGrid = false, oddOffset = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(4, 4)
         val coords2 = coords1.adjacent(H_DIR_NW)
-        assertEquals(board.getOffsetCoordX(coords1), board.getOffsetCoordX(coords2))
+
+        board.getOffsetCoordX(coords1) shouldBe board.getOffsetCoordX(coords2)
     }
 
-    @Test
-    fun verticalGridCartesianColumnWidth() {
+    test("vertical grid column width should be height * sqrt(3) / 2") {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        assertEquals(
-            board.getCartesianX(coords1) + sqrt(3.0) / 2.0,
-            board.getCartesianX(coords2), 0.001
-        )
+
+        board.getCartesianX(coords2)
+            .shouldBe((board.getCartesianX(coords1) + sqrt(3.0) / 2.0) plusOrMinus 0.001)
     }
 
-    @Test
-    fun verticalGridCartesianRowHeight() {
+    test("vertical grid adjacent columns should be offset by 0.5") {
         val board = HexBoard(10, 10, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(V_DIR_SE)
-        assertEquals(
-            board.getCartesianY(coords1) + 0.5,
-            board.getCartesianY(coords2), 0.001
-        )
+
+        board.getCartesianY(coords2).shouldBe((board.getCartesianY(coords1) + 0.5) plusOrMinus 0.001)
     }
 
-    @Test
-    fun horizontalGridCartesianColumnWidth() {
+    test("horizontal grid adjacent rows should be offset by 0.5") {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(H_DIR_SE)
-        assertEquals(
-            board.getCartesianX(coords1) + 0.5,
-            board.getCartesianX(coords2), 0.001
-        )
+
+        board.getCartesianX(coords2).shouldBe((board.getCartesianX(coords1) + 0.5) plusOrMinus 0.001)
     }
 
-    @Test
-    fun horizontalGridCartesianRowHeight() {
+    test("horizontal grid row height should be width * sqrt(3) / 2") {
         val board = HexBoard(10, 10, verticalGrid = false, defaultHex = defaultHex)
         val coords1 = board.createCoords(2, 2)
         val coords2 = coords1.adjacent(H_DIR_SE)
-        assertEquals(
-            board.getCartesianY(coords1) + sqrt(3.0) / 2.0,
-            board.getCartesianY(coords2), 0.001
-        )
+
+        board.getCartesianY(coords2)
+            .shouldBe((board.getCartesianY(coords1) + sqrt(3.0) / 2.0) plusOrMinus 0.001)
     }
-}
+})

@@ -24,219 +24,91 @@
 
 package ttgamelib
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class MapRegionTest {
-    @Test
-    fun testNorthRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.NORTH
+internal class MapRegionTest : FunSpec({
 
-        val evenColIn = board.createCoordsFromOffset(3, 2)
-        val evenColOut = board.createCoordsFromOffset(3, 3)
-        val oddColIn = board.createCoordsFromOffset(6, 2)
-        val oddColOut = board.createCoordsFromOffset(6, 3)
+    val board = HexBoard(12, 10)
 
-        assertAll(
-            { assertTrue(region.isInRegion(evenColIn, board, 3)) },
-            { assertTrue(region.isInRegion(oddColIn, board, 3)) },
-            { assertFalse(region.isInRegion(evenColOut, board, 3)) },
-            { assertFalse(region.isInRegion(oddColOut, board, 3)) },
-        )
+    test("region should include hexes within set distance of the edge") {
+        forAll(
+            row(MapRegion.NORTH,3, 2, true),
+            row(MapRegion.NORTH,3, 3, false),
+            row(MapRegion.NORTH,6, 2, true),
+            row(MapRegion.NORTH,6, 3, false),
+
+            row(MapRegion.SOUTH, 3, 7, true),
+            row(MapRegion.SOUTH, 3, 6, false),
+            row(MapRegion.SOUTH, 6, 7, true),
+            row(MapRegion.SOUTH, 6, 6, false),
+
+            row(MapRegion.WEST, 2, 3, true),
+            row(MapRegion.WEST, 3, 3, false),
+            row(MapRegion.WEST, 2, 6, true),
+            row(MapRegion.WEST, 3, 6, false),
+
+            row(MapRegion.EAST, 9, 3, true),
+            row(MapRegion.EAST, 8, 3, false),
+            row(MapRegion.EAST, 9, 6, true),
+            row(MapRegion.EAST, 8, 6, false),
+        ) { region, col, row, inRegion ->
+            region.isInRegion(board.createCoordsFromOffset(col, row), board, 3) shouldBe inRegion
+        }
     }
 
-    @Test
-    fun testSouthRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.SOUTH
+    test("corner regions include hexes in closest half of adjacent edges") {
+        forAll(
+            row(MapRegion.NORTHEAST,6, 2, true),
+            row(MapRegion.NORTHEAST,5, 2, false),
+            row(MapRegion.NORTHEAST,9, 4, true),
+            row(MapRegion.NORTHEAST,9, 5, false),
+            row(MapRegion.NORTHEAST,9, 2, true),
+            row(MapRegion.NORTHEAST,8, 3, false),
 
-        val evenColIn = board.createCoordsFromOffset(3, 7)
-        val evenColOut = board.createCoordsFromOffset(3, 6)
-        val oddColIn = board.createCoordsFromOffset(6, 7)
-        val oddColOut = board.createCoordsFromOffset(6, 6)
+            row(MapRegion.SOUTHWEST,5, 7, true),
+            row(MapRegion.SOUTHWEST,6, 7, false),
+            row(MapRegion.SOUTHWEST,2, 5, true),
+            row(MapRegion.SOUTHWEST,2, 4, false),
+            row(MapRegion.SOUTHWEST,2, 7, true),
+            row(MapRegion.SOUTHWEST,3, 6, false),
 
-        assertAll(
-            { assertTrue(region.isInRegion(evenColIn, board, 3)) },
-            { assertTrue(region.isInRegion(oddColIn, board, 3)) },
-            { assertFalse(region.isInRegion(evenColOut, board, 3)) },
-            { assertFalse(region.isInRegion(oddColOut, board, 3)) },
-        )
+            row(MapRegion.SOUTHEAST,6, 7, true),
+            row(MapRegion.SOUTHEAST,5, 7, false),
+            row(MapRegion.SOUTHEAST,9, 5, true),
+            row(MapRegion.SOUTHEAST,9, 4, false),
+            row(MapRegion.SOUTHEAST,9, 7, true),
+            row(MapRegion.SOUTHEAST,8, 6, false),
+
+            row(MapRegion.NORTHWEST,5, 2, true),
+            row(MapRegion.NORTHWEST,6, 2, false),
+            row(MapRegion.NORTHWEST,2, 4, true),
+            row(MapRegion.NORTHWEST,2, 5, false),
+            row(MapRegion.NORTHWEST,2, 2, true),
+            row(MapRegion.NORTHWEST,3, 3, false),
+        ) { region, col, row, inRegion ->
+            region.isInRegion(board.createCoordsFromOffset(col, row), board, 3) shouldBe inRegion
+        }
     }
 
-    @Test
-    fun testWestRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.WEST
-
-        val evenRowIn = board.createCoordsFromOffset(2, 3)
-        val evenRowOut = board.createCoordsFromOffset(3, 3)
-        val oddRowIn = board.createCoordsFromOffset(2, 6)
-        val oddRowOut = board.createCoordsFromOffset(3, 6)
-
-        assertAll(
-            { assertTrue(region.isInRegion(evenRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(oddRowIn, board, 3)) },
-            { assertFalse(region.isInRegion(evenRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(oddRowOut, board, 3)) },
-        )
+    test("center region includes non-edge regions") {
+        forAll(
+            row(5, 3, true),
+            row(5, 2, false),
+            row(5, 6, true),
+            row(5, 7, false),
+            row(3, 5, true),
+            row(2, 5, false),
+            row(8, 5, true),
+            row(9, 5, false),
+        ) { col, row, inRegion ->
+            MapRegion.CENTER.isInRegion(board.createCoordsFromOffset(col, row), board, 3) shouldBe inRegion
+            MapRegion.ANY_EDGE.isInRegion(board.createCoordsFromOffset(col, row), board, 3) shouldNotBe inRegion
+        }
     }
-
-    @Test
-    fun testEastRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.EAST
-
-        val evenRowIn = board.createCoordsFromOffset(9, 3)
-        val evenRowOut = board.createCoordsFromOffset(8, 3)
-        val oddRowIn = board.createCoordsFromOffset(9, 6)
-        val oddRowOut = board.createCoordsFromOffset(8, 6)
-
-        assertAll(
-            { assertTrue(region.isInRegion(evenRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(oddRowIn, board, 3)) },
-            { assertFalse(region.isInRegion(evenRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(oddRowOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testNorthEastRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.NORTHEAST
-
-        val topRowIn = board.createCoordsFromOffset(6, 2)
-        val topRowOut = board.createCoordsFromOffset(5, 2)
-        val rightColIn = board.createCoordsFromOffset(9, 4)
-        val rightColOut = board.createCoordsFromOffset(9, 5)
-        val cornerIn = board.createCoordsFromOffset(9, 2)
-        val cornerOut = board.createCoordsFromOffset(8, 3)
-
-        assertAll(
-            { assertTrue(region.isInRegion(topRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(rightColIn, board, 3)) },
-            { assertTrue(region.isInRegion(cornerIn, board, 3)) },
-            { assertFalse(region.isInRegion(topRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(rightColOut, board, 3)) },
-            { assertFalse(region.isInRegion(cornerOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testSouthWestRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.SOUTHWEST
-
-        val bottomRowIn = board.createCoordsFromOffset(5, 7)
-        val bottomRowOut = board.createCoordsFromOffset(6, 7)
-        val leftColIn = board.createCoordsFromOffset(2, 5)
-        val leftColOut = board.createCoordsFromOffset(2, 4)
-        val cornerIn = board.createCoordsFromOffset(2, 7)
-        val cornerOut = board.createCoordsFromOffset(3, 6)
-
-        assertAll(
-            { assertTrue(region.isInRegion(bottomRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(leftColIn, board, 3)) },
-            { assertTrue(region.isInRegion(cornerIn, board, 3)) },
-            { assertFalse(region.isInRegion(bottomRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(leftColOut, board, 3)) },
-            { assertFalse(region.isInRegion(cornerOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testSouthEastRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.SOUTHEAST
-
-        val bottomRowIn = board.createCoordsFromOffset(6, 7)
-        val bottomRowOut = board.createCoordsFromOffset(5, 7)
-        val rightColIn = board.createCoordsFromOffset(9, 5)
-        val rightColOut = board.createCoordsFromOffset(9, 4)
-        val cornerIn = board.createCoordsFromOffset(9, 7)
-        val cornerOut = board.createCoordsFromOffset(8, 6)
-
-        assertAll(
-            { assertTrue(region.isInRegion(bottomRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(rightColIn, board, 3)) },
-            { assertTrue(region.isInRegion(cornerIn, board, 3)) },
-            { assertFalse(region.isInRegion(bottomRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(rightColOut, board, 3)) },
-            { assertFalse(region.isInRegion(cornerOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testNorthWestRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.NORTHWEST
-
-        val topRowIn = board.createCoordsFromOffset(5, 2)
-        val topRowOut = board.createCoordsFromOffset(6, 2)
-        val leftColIn = board.createCoordsFromOffset(2, 4)
-        val leftColOut = board.createCoordsFromOffset(2, 5)
-        val cornerIn = board.createCoordsFromOffset(2, 2)
-        val cornerOut = board.createCoordsFromOffset(3, 3)
-
-        assertAll(
-            { assertTrue(region.isInRegion(topRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(leftColIn, board, 3)) },
-            { assertTrue(region.isInRegion(cornerIn, board, 3)) },
-            { assertFalse(region.isInRegion(topRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(leftColOut, board, 3)) },
-            { assertFalse(region.isInRegion(cornerOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testCenterRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.CENTER
-
-        val topRowIn = board.createCoordsFromOffset(5, 3)
-        val topRowOut = board.createCoordsFromOffset(5, 2)
-        val bottomRowIn = board.createCoordsFromOffset(5, 6)
-        val bottomRowOut = board.createCoordsFromOffset(5, 7)
-        val leftColIn = board.createCoordsFromOffset(3, 5)
-        val leftColOut = board.createCoordsFromOffset(2, 5)
-        val rightColIn = board.createCoordsFromOffset(8, 5)
-        val rightColOut = board.createCoordsFromOffset(9, 5)
-
-        assertAll(
-            { assertTrue(region.isInRegion(topRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(bottomRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(leftColIn, board, 3)) },
-            { assertTrue(region.isInRegion(rightColIn, board, 3)) },
-            { assertFalse(region.isInRegion(topRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(bottomRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(leftColOut, board, 3)) },
-            { assertFalse(region.isInRegion(rightColOut, board, 3)) },
-        )
-    }
-
-    @Test
-    fun testAnyEdgeRegion() {
-        val board = HexBoard(12, 10)
-        val region = MapRegion.ANY_EDGE
-
-        val topRowIn = board.createCoordsFromOffset(5, 2)
-        val topRowOut = board.createCoordsFromOffset(5, 3)
-        val bottomRowIn = board.createCoordsFromOffset(5, 7)
-        val bottomRowOut = board.createCoordsFromOffset(5, 6)
-        val leftColIn = board.createCoordsFromOffset(2, 5)
-        val leftColOut = board.createCoordsFromOffset(3, 5)
-        val rightColIn = board.createCoordsFromOffset(9, 5)
-        val rightColOut = board.createCoordsFromOffset(8, 5)
-
-        assertAll(
-            { assertTrue(region.isInRegion(topRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(bottomRowIn, board, 3)) },
-            { assertTrue(region.isInRegion(leftColIn, board, 3)) },
-            { assertTrue(region.isInRegion(rightColIn, board, 3)) },
-            { assertFalse(region.isInRegion(topRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(bottomRowOut, board, 3)) },
-            { assertFalse(region.isInRegion(leftColOut, board, 3)) },
-            { assertFalse(region.isInRegion(rightColOut, board, 3)) },
-        )
-    }
-}
+})

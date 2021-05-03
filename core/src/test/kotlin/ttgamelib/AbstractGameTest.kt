@@ -24,9 +24,10 @@
 
 package ttgamelib
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
 import io.mockk.*
 
 private class TestEntity : Entity {
@@ -42,82 +43,72 @@ private class TestGame : AbstractGame<HexBoard, TestEntity>() {
     override var board = HexBoard(10, 10)
 }
 
-internal class AbstractGameTest {
-    private lateinit var game: Game<HexBoard, TestEntity>
+internal class AbstractGameTest : FunSpec({
+    lateinit var game: Game<HexBoard, TestEntity>
 
-    @BeforeEach
-    private fun createGame() {
+    beforeAny {
         game = TestGame()
     }
 
-    @Test
-    fun findPlayerByID() {
+    test("findPlayerByID should find the player") {
         val playerName = "Test Player"
         val p = game.newPlayer(0, playerName)
-        assertEquals(playerName, game.getPlayer(p.id)?.name)
+
+        game.getPlayer(p.id)?.name shouldBe playerName
     }
 
-    @Test
-    fun allPlayersAdded() {
+    test("newPlayer should add player to the game") {
         val p1 = game.newPlayer(0, "Player 1")
         val p2 = game.newPlayer(1, "Player 2")
         val all: Collection<Player?> = game.allPlayers()
-        assertAll(
-            { assertEquals(2, all.size) },
-            { all.contains(p1) },
-            { all.contains(p2) })
+
+        all.shouldContainExactlyInAnyOrder(p1, p2)
     }
 
-    @Test
-    fun findUnitById() {
+    test("unit lookup should find unit by id") {
         val unit = TestEntity()
         val id = game.addUnit(unit, 0)
-        assertEquals(game.getUnit(id), unit)
+
+        game.getUnit(id) shouldBe unit
     }
 
-    @Test
-    fun allUnitsAdded() {
+    test("addUnit should add units to the game") {
         val unit1 = TestEntity()
         val unit2 = TestEntity().apply {
             name = "Test Entity 2"
         }
         game.addUnit(unit1, 0)
         game.addUnit(unit2, 0)
-        val all = game.allUnits()
-        assertAll(
-            { assertEquals(2, all.size) },
-            { all.contains(unit1) },
-            { all.contains(unit2) })
+
+        game.allUnits().shouldContainExactlyInAnyOrder(unit1, unit2)
     }
 
-    @Test
-    fun addPlayerNotifiesListener() {
+    test("addPlayer should notify listener") {
         val listener = mockk<GameListener>(relaxUnitFun = true)
         game.addListener(listener)
         val p = game.newPlayer(0, "Test Player")
+
         verify {
             listener.playerAdded(p.id)
         }
     }
 
-    @Test
-    fun removePlayerNotifiesListener() {
+    test("removePlayer should notify listener") {
         val listener = mockk<GameListener>(relaxUnitFun = true)
         game.addListener(listener)
         val p = game.newPlayer(0, "Test Player")
         game.removePlayer(p.id)
+
         verify {
             listener.playerRemoved(p.id)
         }
     }
 
-    @Test
-    fun canRemovePlayer() {
+    test("should be able to remove player from the game") {
         val p1 = game.newPlayer(0, "Player 1")
-        game.newPlayer(1, "Player 2")
+        val p2 = game.newPlayer(1, "Player 2")
         game.removePlayer(p1.id)
-        assertAll(
-            { assertEquals(1, game.allPlayers().size) },
-            { assertFalse(game.allPlayers().contains(p1)) })
+
+        game.allPlayers().shouldContainExactly(p2)
     }
-}
+})

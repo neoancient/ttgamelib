@@ -105,7 +105,7 @@ public class Server(
     }
 
     @Suppress("unused")
-    private fun Application.module() {
+    internal fun Application.module() {
         install(WebSockets)
 
         routing {
@@ -129,7 +129,7 @@ public class Server(
         }
     }
 
-    private suspend fun handlePacket(packet: Packet, connection: ClientConnection) {
+    internal suspend fun handlePacket(packet: Packet, connection: ClientConnection) {
         when (packet) {
             is SendNamePacket ->
                 if (packet.reconnect &&
@@ -232,7 +232,7 @@ public class Server(
     }
 }
 
-private class ClientConnection(val session: DefaultWebSocketSession) {
+internal class ClientConnection(val session: DefaultWebSocketSession) {
     companion object {
         val lastId = AtomicInteger(0)
     }

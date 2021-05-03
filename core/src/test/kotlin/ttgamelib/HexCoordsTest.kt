@@ -24,251 +24,244 @@
 
 package ttgamelib
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.doubles.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
 
-internal class HexCoordsTest {
+internal class HexCoordsTest : FunSpec({
 
-    @Test
-    fun sameColumnForSameXVertical() {
+    test("vertical grid should have same column for same offset x")  {
         val coords1 = HexCoords.createFromOffset(3, 3, vertical = true, offsetOdd = true)
         val coords2 = HexCoords.createFromOffset(3, 5, vertical = true, offsetOdd = true)
-        Assertions.assertEquals(coords1.col, coords2.col)
+
+        coords1.col shouldBe coords2.col
     }
 
-    @Test
-    fun sameRowForSameYHorizontal() {
+    test("horizontal grid should have same row for same offset y")  {
         val coords1 = HexCoords.createFromOffset(3, 3, vertical = false, offsetOdd = true)
         val coords2 = HexCoords.createFromOffset(5, 3, vertical = false, offsetOdd = true)
-        Assertions.assertEquals(coords1.row, coords2.row)
+
+        coords1.row shouldBe coords2.row
     }
 
-    @Test
-    fun testOddColumnOffset() {
+    test("oddColumn should have higher Cartesian Y in vertical offsetOdd grid") {
         val evenColumn = HexCoords.createFromOffset(0, 0, vertical = true, offsetOdd = true)
         val oddColumn = HexCoords.createFromOffset(1, 0, vertical = true, offsetOdd = true)
-        Assertions.assertTrue(evenColumn.cartesianY() < oddColumn.cartesianY())
+
+        oddColumn.cartesianY() shouldBeGreaterThan evenColumn.cartesianY()
     }
 
-    @Test
-    fun testEvenColumnOffset() {
+    test("evenColumn should have higher Cartesian Y in vertical offsetEven grid") {
         val evenColumn = HexCoords.createFromOffset(0, 0, vertical = true, offsetOdd = false)
         val oddColumn = HexCoords.createFromOffset(1, 0, vertical = true, offsetOdd = false)
-        Assertions.assertTrue(evenColumn.cartesianY() > oddColumn.cartesianY())
+
+        evenColumn.cartesianY() shouldBeGreaterThan oddColumn.cartesianY()
     }
 
-    @Test
-    fun testOddRowOffset() {
+    test("odd row should have higher Cartesian x in horizontal offsetOdd grid") {
         val evenRow = HexCoords.createFromOffset(0, 0, vertical = false, offsetOdd = true)
         val oddRow = HexCoords.createFromOffset(0, 1, vertical = false, offsetOdd = true)
-        Assertions.assertTrue(evenRow.cartesianX() < oddRow.cartesianX())
+
+        oddRow.cartesianX() shouldBeGreaterThan evenRow.cartesianY()
     }
 
-    @Test
-    fun testEvenRowOffset() {
+    test("even row should have higher Cartesian x in horizontal offsetEven grid") {
         val evenRow = HexCoords.createFromOffset(0, 0, vertical = false, offsetOdd = false)
         val oddRow = HexCoords.createFromOffset(0, 1, vertical = false, offsetOdd = false)
-        Assertions.assertTrue(evenRow.cartesianX() > oddRow.cartesianX())
+
+        evenRow.cartesianX() shouldBeGreaterThan oddRow.cartesianX()
     }
 
 
-    @Test
-    fun distanceToSameHexIsZero() {
+    test("distance to same hex should be zero") {
         val coords = HexCoords(8, 8, true)
-        Assertions.assertEquals(coords.distance(coords), 0)
+
+        coords.distance(coords) shouldBe 0
     }
 
-    @Test
-    fun distanceInSameColumnVerticalIsDifferenceInY() {
+    test("distance in same column in vertical grid should be difference in offsetY") {
         val coords1 = HexCoords.createFromOffset(8, 8, vertical = true, offsetOdd = true)
         val coords2 = HexCoords.createFromOffset(8, 6, vertical = true, offsetOdd = true)
-        Assertions.assertAll(
-            { Assertions.assertEquals(coords1.distance(coords2), 2) },
-            { Assertions.assertEquals(coords2.distance(coords1), 2) }
-        )
+
+        coords1.distance(coords2) shouldBe 2
+        coords2.distance(coords1) shouldBe 2
     }
 
-    @Test
-    fun distanceInSameRowHorizontalIsDifferenceInX() {
+    test("distance in same row in horizontal grid should be difference in offsetX") {
         val coords1 = HexCoords.createFromOffset(8, 8, vertical = false, offsetOdd = true)
         val coords2 = HexCoords.createFromOffset(6, 8, vertical = false, offsetOdd = true)
-        Assertions.assertAll(
-            { Assertions.assertEquals(coords1.distance(coords2), 2) },
-            { Assertions.assertEquals(coords2.distance(coords1), 2) }
-        )
+
+        coords1.distance(coords2) shouldBe 2
+        coords2.distance(coords1) shouldBe 2
     }
 
-    @Test
-    fun testDistanceNonStraightLine() {
+    test("distance should calculate in non-straight line") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1)
             .translate(1)
             .translate(1)
             .translate(0)
-        Assertions.assertAll(
-            { Assertions.assertEquals(coords1.distance(coords2), 3) },
-            { Assertions.assertEquals(coords2.distance(coords1), 3) }
-        )
+
+        coords1.distance(coords2) shouldBe 3
+        coords2.distance(coords1) shouldBe 3
     }
 
-    @Test
-    fun directionFromSameHexIsZeroDegreesWithVerticalOrientation() {
-        val coords1 = HexCoords(8, 8, true)
-        val coords2 = HexCoords(8, 8, true)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 0)
+    test("direction to same hex defaults to zero") {
+        forAll(
+            row(true),
+            row(false)
+        ) { verticalGrid ->
+            val coords1 = HexCoords(8, 8, verticalGrid = verticalGrid)
+            val coords2 = HexCoords(8, 8, verticalGrid = verticalGrid)
+            coords1.degreesTo(coords2) shouldBe 0
+        }
     }
 
-    @Test
-    fun directionFromSameHexIsZeroDegreesWithHorizontalOrientation() {
-        val coords1 = HexCoords(8, 8, false)
-        val coords2 = HexCoords(8, 8, false)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 0)
-    }
-
-    @Test
-    fun directionToHexAboveIsZeroDegreesWithVerticalOrientation() {
+    test("direction to hex above should be zero (vertical)") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1)
         coords2.translate(V_DIR_N)
         coords2.translate(V_DIR_N)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 0)
+
+        coords1.degreesTo(coords2) shouldBe 0
     }
 
-    @Test
-    fun directionToHexAboveIsZeroDegreesWithHorizontalOrientation() {
+    test("direction to hex above should be zero (horizontal)") {
         val coords1 = HexCoords(8, 8, false)
         val coords2 = HexCoords(coords1)
         coords2.translate(H_DIR_NE)
         coords2.translate(H_DIR_NW)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 0)
+
+        coords1.degreesTo(coords2) shouldBe 0
     }
 
-    @Test
-    fun degreesToHexBelowIs180DegreesWithVerticalOrientation() {
+    test("direction to hex below should be 180 (vertical)") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1)
             .translate(V_DIR_S)
             .translate(V_DIR_S)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 180)
+
+        coords1.degreesTo(coords2) shouldBe 180
     }
 
-    @Test
-    fun degreesToHexBelowIs180DegreesWithHorizontalOrientation() {
+    test("direction to hex below should be 180 (horizontal)") {
         val coords1 = HexCoords(8, 8, false)
         val coords2 = HexCoords(coords1)
             .translate(H_DIR_SE)
             .translate(H_DIR_SW)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 180)
+
+        coords1.degreesTo(coords2) shouldBe 180
     }
 
-    @Test
-    fun degreesToHexToRightIs90DegreesWithVerticalOrientation() {
+    test("direction to hex to right should be 90 (vertical)") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1)
             .translate(V_DIR_NE)
             .translate(V_DIR_SE)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 90)
+
+        coords1.degreesTo(coords2) shouldBe 90
     }
 
-    @Test
-    fun degreesToHexToRightIs90DegreesWithHorizontalOrientation() {
+    test("direction to hex to right should be 90 (horizontal)") {
         val coords1 = HexCoords(8, 8, false)
         val coords2 = HexCoords(coords1)
             .translate(H_DIR_E)
             .translate(H_DIR_E)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 90)
+
+        coords1.degreesTo(coords2) shouldBe 90
     }
 
-    @Test
-    fun degreesToHexToLeftIs270DegreesWithVerticalOrientation() {
+    test("direction to hex to left should be 270 (vertical)") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1)
             .translate(V_DIR_NW)
             .translate(V_DIR_SW)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 270)
+
+        coords1.degreesTo(coords2) shouldBe 270
     }
 
-    @Test
-    fun degreesToHexToLeftIs270DegreesWithHorizontalOrientation() {
+    test("direction to hex to left should be 270 (horizontal)") {
         val coords1 = HexCoords(8, 8, false)
         val coords2 = HexCoords(coords1)
             .translate(H_DIR_W)
             .translate(H_DIR_W)
-        Assertions.assertEquals(coords1.degreesTo(coords2), 270)
+
+        coords1.degreesTo(coords2) shouldBe 270
     }
 
-    @Test
-    fun relativeBearingFromNEToNWIs240() {
+    test("relative bearing from NE to NW should be 240") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1).translate(V_DIR_NW)
-        Assertions.assertEquals(coords1.relativeBearingDegrees(V_DIR_NE, coords2), 240)
+
+        coords1.relativeBearingDegrees(V_DIR_NE, coords2) shouldBe 240
     }
 
-    @Test
-    fun relativeBearingFromNWToNEIs120() {
+    test("relative bearing from NW to NE should be 240") {
         val coords1 = HexCoords(8, 8, true)
         val coords2 = HexCoords(coords1).translate(V_DIR_NE)
-        Assertions.assertEquals(coords1.relativeBearingDegrees(V_DIR_NW, coords2), 120)
+
+        coords1.relativeBearingDegrees(V_DIR_NW, coords2) shouldBe 120
     }
 
-    @Test
-    fun rotatePositiveSteps() {
+    test("positive rotations should add 60 degrees to bearing") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(2, center)
-        Assertions.assertEquals(center.degreesTo(testHex), 180)
+
+        center.degreesTo(testHex) shouldBe 180
     }
 
-    @Test
-    fun rotatePositiveStepsPast180() {
+    test("rotating past 180 degrees should work correctly") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(4, center)
-        Assertions.assertEquals(300, center.degreesTo(testHex))
+
+        center.degreesTo(testHex) shouldBe 300
     }
 
-    @Test
-    fun rotateZero() {
+    test("zero rotation should not change bearing") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(0, center)
-        Assertions.assertEquals(center.degreesTo(testHex), 60)
+
+        center.degreesTo(testHex) shouldBe 60
     }
 
-    @Test
-    fun rotateMoreThanSixSteps() {
+    test("rotating more than six arcs should be the same as rotating % 6") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(7, center)
-        Assertions.assertEquals(center.degreesTo(testHex), 120)
+
+        center.degreesTo(testHex) shouldBe 120
     }
 
-    @Test
-    fun rotateNegativeSteps() {
+    test("negative rotations should move the bearing anti-clockwise") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(-2, center)
-        Assertions.assertEquals(center.degreesTo(testHex), 300)
+
+        center.degreesTo(testHex) shouldBe 300
     }
 
-    @Test
-    fun rotateMoreThanSixNegativeSteps() {
+    test("negative rotations more than six steps should bring the bearing back around") {
         val center = HexCoords(8, 8, true)
         val testHex = HexCoords(center)
             .translate(1)
             .translate(1)
             .rotate(-9, center)
-        Assertions.assertEquals(center.degreesTo(testHex), 240)
-    }
 
-}
+        center.degreesTo(testHex) shouldBe 240
+    }
+})
