@@ -188,6 +188,13 @@ public class Server(
 
     private suspend fun processChatMessage(packet: ChatCommandPacket) {
         fun name(id: Int) = connections[id]?.name ?: "<unknown>"
+
+        /**
+         * Splits off the next token from the [text]. Tokens are separated by spaces, but
+         * any text surrounded by quotes is treated as a single token.
+         *
+         * @return the token and the remainder of the [text], in that order
+         */
         fun shiftToken(text: String): Pair<String, String> {
             if (text.startsWith("\"")) {
                 text.substring(1).indexOf("\"").takeIf { it > 0 }?.let {
