@@ -87,7 +87,7 @@ public class Server(
     }
 
     private val server = embeddedServer(Netty, environment)
-    private val connections = ConcurrentHashMap<Int, ClientConnection>()
+    internal val connections = ConcurrentHashMap<Int, ClientConnection>()
     private val users: Users = Users()
 
     /**
