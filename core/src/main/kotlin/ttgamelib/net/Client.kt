@@ -78,9 +78,17 @@ public interface ClientHandler {
  * @property name The client's username
  * @property handler The object responsible for handling game-related commands
  */
-public class Client(private var name: String, private val handler: ClientHandler) {
-    private val queue = Channel<Packet>()
+public class Client internal constructor(
+    private var name: String,
+    private val handler: ClientHandler,
+    private val queue: Channel<Packet>
+) {
+    public constructor(name: String, handler: ClientHandler) :
+            this(name, handler, Channel<Packet>())
+
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    public val clientName: String by this::name
 
     @KtorExperimentalAPI
     private val client = HttpClient {
@@ -131,7 +139,7 @@ public class Client(private var name: String, private val handler: ClientHandler
         }
     }
 
-    private suspend fun handlePacket(packet: Packet) {
+    internal suspend fun handlePacket(packet: Packet) {
         when (packet) {
             is RequestNamePacket -> queue.send(SendNamePacket(name))
             is SuggestNamePacket -> handler.nameConflict(packet.name, packet.taken, packet.disconnected)
