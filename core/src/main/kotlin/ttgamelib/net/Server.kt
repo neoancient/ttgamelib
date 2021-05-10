@@ -31,6 +31,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.websocket.*
 import kotlinx.serialization.json.Json
+import ttgamelib.Configuration
 import ttgamelib.GameEngine
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -88,7 +89,9 @@ public class Server(
                     send(Json.encodeToString(Packet.serializer(), RequestNamePacket))
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
-                        handlePacket(Json.decodeFromString(Packet.serializer(), frame.readText()), thisConnection)
+                        handlePacket(Json {
+                            Configuration.serializersModule
+                        }.decodeFromString(Packet.serializer(), frame.readText()), thisConnection)
                     }
                 } catch (e: Exception) {
                     println(e.localizedMessage)

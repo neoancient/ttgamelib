@@ -24,7 +24,6 @@
 
 package ttgamelib
 
-import kotlinx.serialization.modules.SerializersModule
 import org.slf4j.LoggerFactory
 import ttgamelib.net.*
 import ttgamelib.net.ALL_CLIENTS
@@ -66,9 +65,6 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
 ) : GameEngine {
     public abstract val game: G
     private val server = Server(address, port,this)
-    public var serializersModule: SerializersModule = SerializersModule {
-
-    }
 
     public fun startServer() {
         server.start()
