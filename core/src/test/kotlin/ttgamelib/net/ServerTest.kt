@@ -41,6 +41,7 @@ import io.kotest.matchers.types.shouldBeTypeOf
 import io.ktor.http.cio.websocket.*
 import io.mockk.*
 import kotlinx.serialization.json.Json
+import ttgamelib.GameEngine
 
 private inline fun<reified T: Packet> List<Frame>.decode(): List<T> {
     return map {
@@ -135,13 +136,13 @@ internal class ServerTest : FunSpec({
         }
     }
 
-    test("TextPacket should be sent to game engine") {
-        val packet = TextPacket("json goes here")
+    test("GameCommandPacket should be sent to game engine") {
+        val packet = GameCommandPacket(object : GameCommand{})
         server.handlePacket(packet, connection)
 
         sentPackets.shouldBeEmpty()
         coVerify {
-            engine.handle(packet.text)
+            engine.handle(connection.id, packet)
         }
     }
 

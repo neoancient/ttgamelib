@@ -25,20 +25,24 @@
 package ttgamelib.net
 
 import kotlinx.serialization.Serializable
+import ttgamelib.Board
+import ttgamelib.Entity
+import ttgamelib.Game
+import ttgamelib.Player
 
 internal const val ALL_CLIENTS = -1
 
 /**
- * Commands used by the client and the server to negotiate the connection.
+ * Package for data exchange between the server and the clients
  */
 @Serializable
-internal sealed class Packet
+public sealed class Packet
 
 /**
  * Sent by the server to request the name to use for the client
  */
 @Serializable
-internal class RequestNamePacket : Packet()
+internal object RequestNamePacket : Packet()
 
 /**
  * Sent by the client to request a user name
@@ -64,24 +68,95 @@ internal class SuggestNamePacket(
     val disconnected: Boolean
 ) : Packet()
 
+/**
+ * Sent by the server to complete the handshake and send the [clientId] that identifies the
+ * connection
+ */
 @Serializable
 internal class InitClientPacket(val clientId: Int) : Packet()
 
 /**
- * Wrapper for text data
+ * Wrapper for game-specific commands
  */
 @Serializable
-internal class TextPacket(val text: String) : Packet()
+public class GameCommandPacket(public val command: GameCommand) : Packet()
 
 /**
- * Wrapper for binary data
+ * Sent by the client to the server when a user enters a chat command
  */
 @Serializable
-internal class BinaryPacket(val data: ByteArray) : Packet()
+public class ChatCommandPacket(public val clientId: Int, public val text: String) : Packet()
 
+/**
+ * Sent by the server to any clients that should see the [message]
+ */
 @Serializable
-internal class ChatCommandPacket(val clientId: Int, val text: String) : Packet()
+public class ChatMessagePacket(public val message: ChatMessage) : Packet()
 
+/**
+ * Sent by the server to the client to update the game state on completion of handshake
+ * or reconnection.
+ */
 @Serializable
-internal class ChatMessagePacket(val message: ChatMessage) : Packet()
+public class SendGamePacket(public val game: Game<*, *>) : Packet()
 
+/**
+ * Sent by the server to all clients when a player is added to the game.
+ */
+@Serializable
+public class AddPlayerPacket(public val player: Player) : Packet()
+
+/**
+ * Sent by the server to all clients when a player is removed from the game.
+ */
+@Serializable
+public class RemovePlayerPacket(public val playerId: Int) : Packet()
+
+/**
+ * Sent by the client to the server to change the settings of the player identified with the client.
+ * Sent by the server to all clients to propagate the changes.
+ */
+@Serializable
+public class UpdatePlayerPacket(public val player: Player) : Packet()
+
+/**
+ * Sent by the client to the server to notify that the player's ready status has changed.
+ * Sent by the server to the clients when settings have changed and the ready status needs
+ * to be reset.
+ */
+@Serializable
+public class PlayerReadyPacket(public val playerId: Int, public val ready: Boolean) : Packet()
+
+/**
+ * Sent by the server to all clients when a player has become disconnected or reconnected.
+ */
+@Serializable
+public class PlayerDisconnectionPacket(public val playerId: Int, public val disconnected: Boolean) : Packet()
+
+/**
+ * Sent by the client to the server to request the [entity] be added to the player's force.
+ * Sent by the server to all clients when the entity is added.
+ */
+@Serializable
+public class AddEntityPacket(public val entity: Entity) : Packet()
+
+/**
+ * Sent by the client to the server when a player has removed an entity from the force.
+ * Sent by the server to the clients to notify of the change.
+ */
+@Serializable
+public class RemoveEntityPacket(public val entityId: Int) : Packet()
+
+/**
+ * Sent by the client to the server when a user has changed the game board.
+ * Sent by the server to the clients to notify of the change.
+ */
+@Serializable
+public class SetBoardPacket(public val board: Board) : Packet()
+
+/**
+ * Implemented by classes used to transmit game-specific commands between the server and client.
+ *
+ * Implementing classes need to be serializable.
+ */
+public interface GameCommand

@@ -29,8 +29,6 @@ import io.ktor.client.features.websocket.*
 import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -41,7 +39,7 @@ public interface ClientHandler {
     /**
      * Processes a command received from the server.
      */
-    public suspend fun handle(data: String)
+    public suspend fun handle(command: GameCommand)
 
     /**
      * The requested name is already taken on the server.
@@ -144,18 +142,16 @@ public class Client internal constructor(
             is RequestNamePacket -> queue.send(SendNamePacket(name))
             is SuggestNamePacket -> handler.nameConflict(packet.name, packet.taken, packet.disconnected)
             is InitClientPacket -> handler.connectionEstablished(packet.clientId)
-            is TextPacket -> handler.handle(packet.text)
             is ChatMessagePacket -> handler.receiveChatMessage(packet.message.toHtml())
+            is GameCommandPacket -> handler.handle(packet.command)
         }
     }
 
     /**
      * Sends string-encoded data to the server.
      */
-    public fun send(data: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            queue.send(TextPacket(data))
-        }
+    public suspend fun send(command: GameCommand) {
+        queue.send(GameCommandPacket(command))
     }
 
     /**

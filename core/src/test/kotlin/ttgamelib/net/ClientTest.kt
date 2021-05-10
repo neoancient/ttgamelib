@@ -47,7 +47,7 @@ internal class ClientTest : FunSpec({
     }
 
     test("RequestNamePacket should be answered with SendNamePacket") {
-        client.handlePacket(RequestNamePacket())
+        client.handlePacket(RequestNamePacket)
 
         with (slot.captured) {
             shouldBeTypeOf<SendNamePacket>()
@@ -75,11 +75,12 @@ internal class ClientTest : FunSpec({
     }
 
     test("text packet should be passed to handler") {
-        val packet = TextPacket("json goes here")
+        val command = object : GameCommand {}
+        val packet = GameCommandPacket(command)
         client.handlePacket(packet)
 
         coVerify {
-            handler.handle(packet.text)
+            handler.handle(command)
         }
     }
 
@@ -92,14 +93,13 @@ internal class ClientTest : FunSpec({
         }
     }
 
-    test("send should encode data as TextPacket") {
-        val data = "json goes here"
+    test("send should encode data as GameCommandPacket") {
+        val data = object : GameCommand {}
         client.send(data)
-        yield()
 
         with(slot.captured) {
-            shouldBeTypeOf<TextPacket>()
-            text shouldBe data
+            shouldBeTypeOf<GameCommandPacket>()
+            command shouldBe data
         }
     }
 

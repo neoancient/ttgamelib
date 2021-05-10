@@ -31,36 +31,9 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.websocket.*
 import kotlinx.serialization.json.Json
+import ttgamelib.GameEngine
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-
-/**
- * Processes game-specific commands received by the server.
- */
-public interface GameEngine {
-    /**
-     * Processes a command received by the server.
-     */
-    public suspend fun handle(json: String)
-
-    /**
-     * A player has connected to the server.
-     *
-     * @param id The player id
-     * @param name The player name
-     */
-    public suspend fun playerConnected(id: Int, name: String)
-
-    /**
-     * A player has disconnected from the server.
-     */
-    public suspend fun playerDisconnected(id: Int)
-
-    /**
-     * A disconnected player has reconnected.
-     */
-    public suspend fun playerReconnected(id: Int)
-}
 
 /**
  * The game server.
@@ -112,8 +85,7 @@ public class Server(
             webSocket("/") {
                 val thisConnection = ClientConnection(this)
                 try {
-                    val packet = RequestNamePacket()
-                    send(Json.encodeToString(Packet.serializer(), packet))
+                    send(Json.encodeToString(Packet.serializer(), RequestNamePacket))
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
                         handlePacket(Json.decodeFromString(Packet.serializer(), frame.readText()), thisConnection)
@@ -146,8 +118,8 @@ public class Server(
                 } else if (packet.name in users) {
                     users.suggestAlternateName(packet.name).let {
                         connection.send(SuggestNamePacket(it.first, it.second,
-                            connections.values.none {
-                                it.name == packet.name
+                            connections.values.none { conn ->
+                                conn.name == packet.name
                             }))
                     }
                 } else {
@@ -159,8 +131,8 @@ public class Server(
                     connection.send(InitClientPacket(connection.id))
                     send(packet = ChatMessagePacket(SystemMessage("${packet.name} joined")))
                 }
-            is TextPacket -> gameEngine.handle(packet.text)
             is ChatCommandPacket -> processChatMessage(packet)
+            else -> gameEngine.handle(connection.id, packet)
         }
     }
 
@@ -177,13 +149,6 @@ public class Server(
         } else {
             connections[id]?.send(packet)
         }
-    }
-
-    /**
-     * Wraps the [data] in a [TextPacket] and sends it to client [id].
-     */
-    public suspend fun send(id: Int, data: String) {
-        send(id, TextPacket(data))
     }
 
     private suspend fun processChatMessage(packet: ChatCommandPacket) {
@@ -239,12 +204,11 @@ public class Server(
     }
 }
 
-internal class ClientConnection(val session: DefaultWebSocketSession) {
+internal class ClientConnection(private val session: DefaultWebSocketSession) {
     companion object {
         val lastId = AtomicInteger(0)
     }
     var id = lastId.getAndIncrement()
-    var userId = id
     var name: String = "New Player"
     var pending: Boolean = true
 
