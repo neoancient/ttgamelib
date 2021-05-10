@@ -59,7 +59,7 @@ public interface Game<B: Board, E: Entity> {
      * Removes the player from the game and notifies listeners.
      *
      * @param playerId The id of the player to be removed
-     * @return The player that was removed, or [null] if the player was not in the game
+     * @return The player that was removed, or null if the player was not in the game
      */
     public fun removePlayer(playerId: Int): Player?
 
@@ -92,7 +92,7 @@ public interface Game<B: Board, E: Entity> {
     /**
      * Lookup for player by [playerId]
      *
-     * @return the player with [playerId], or [null] if there is no player with that id in the game
+     * @return the player with [playerId], or null if there is no player with that id in the game
      */
     public fun getPlayer(playerId: Int): Player?
 
@@ -115,7 +115,7 @@ public interface Game<B: Board, E: Entity> {
      * Removes a unit from the game and notifies listeners
      *
      * @param unitId the id of the unit to remove
-     * @return the unit removed, or [null] if there was no unit in the game with that id
+     * @return the unit removed, or null if there was no unit in the game with that id
      */
     public fun removeUnit(unitId: Int): E?
 
@@ -127,9 +127,9 @@ public interface Game<B: Board, E: Entity> {
     /**
      * Lookup for unit by id.
      *
-     * @return the unit with [unitId], or [null] if there is no unit in the game with that id
+     * @return the unit with [unitId], or null if there is no unit in the game with that id
      */
-    public fun getUnit(unitId: Int): E?
+    public fun getEntity(unitId: Int): E?
 
     /**
      * @return a [Collection] of all the units in the game
@@ -157,7 +157,7 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
     @Serializable(with = AtomicIntegerAsIntSerializer::class)
     private val nextUnitId = AtomicInteger(1)
     private val players: MutableMap<Int, Player> = ConcurrentHashMap()
-    private val units: MutableMap<Int, E> = ConcurrentHashMap()
+    private val entities: MutableMap<Int, E> = ConcurrentHashMap()
     private val listeners: MutableList<GameListener> = CopyOnWriteArrayList()
 
     public fun setWeather(weather: Weather) {
@@ -230,7 +230,7 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
     override fun addUnit(unit: E, playerId: Int): Int {
         unit.initGameState(nextUnitId.getAndIncrement())
         unit.playerId = playerId
-        return replaceUnit(unit.unitId, unit)
+        return replaceUnit(unit.entityId, unit)
     }
 
     /**
@@ -238,14 +238,14 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
      * a unit with this id, it is replaced.
      */
     override fun replaceUnit(unitId: Int, unit: E): Int {
-        unit.unitId = unitId
-        units[unitId] = unit
+        unit.entityId = unitId
+        entities[unitId] = unit
         listeners.forEach { it.unitAdded(unitId) }
         return unitId
     }
 
     override fun removeUnit(unitId: Int): E? {
-        val unit = units.remove(unitId)
+        val unit = entities.remove(unitId)
         if (unit != null) {
             listeners.forEach { it.unitRemoved(unitId) }
         }
@@ -256,9 +256,9 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
         listeners.forEach { it.appendChat(text) }
     }
 
-    override fun getUnit(unitId: Int): E? = units[unitId]
+    override fun getEntity(unitId: Int): E? = entities[unitId]
 
-    override fun allUnits(): Collection<E> = units.values
+    override fun allUnits(): Collection<E> = entities.values
 
     override fun addListener(l: GameListener) {
         listeners.add(l)

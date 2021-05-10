@@ -29,7 +29,7 @@ package ttgamelib
  */
 public interface Entity {
     /** An ID that is unique in the game */
-    public var unitId: Int
+    public var entityId: Int
 
     /** An identifier shown to players. This should usually be unique in the game. */
     public var name: String
@@ -55,6 +55,6 @@ public interface Entity {
      * Assigns the game ID and performs any necessary initialization
      */
     public fun initGameState(id: Int) {
-        unitId = id
+        entityId = id
     }
 }

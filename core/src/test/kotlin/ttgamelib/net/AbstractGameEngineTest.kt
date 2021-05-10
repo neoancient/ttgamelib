@@ -31,7 +31,7 @@ import io.mockk.spyk
 import ttgamelib.*
 
 private class TestEntity : Entity {
-    override var unitId: Int = -1
+    override var entityId: Int = -1
     override var name: String = "Test Entity"
     override var playerId: Int = -1
     override var facing: Int = 0
@@ -74,16 +74,16 @@ internal class AbstractGameEngineTest : FunSpec({
         engine.handle(clientId, AddEntityPacket(entity))
 
         entity.playerId shouldBe clientId
-        engine.game.getUnit(entity.unitId) shouldBe entity
+        engine.game.getEntity(entity.entityId) shouldBe entity
     }
 
     test("RemoveEntityPacket should remove entity from game") {
         val entity = TestEntity()
         engine.game.addUnit(entity, clientId)
 
-        engine.handle(clientId, RemoveEntityPacket(entity.unitId))
+        engine.handle(clientId, RemoveEntityPacket(entity.entityId))
 
-        engine.game.getUnit(entity.unitId) shouldBe null
+        engine.game.getEntity(entity.entityId) shouldBe null
     }
 
     test("SetBoardPacket should change board") {

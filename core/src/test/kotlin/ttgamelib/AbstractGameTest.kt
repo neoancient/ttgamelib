@@ -31,7 +31,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.*
 
 private class TestEntity : Entity {
-    override var unitId: Int = -1
+    override var entityId: Int = -1
     override var name: String = "Test Entity"
     override var playerId: Int = -1
     override var facing: Int = 0
@@ -69,7 +69,7 @@ internal class AbstractGameTest : FunSpec({
         val unit = TestEntity()
         val id = game.addUnit(unit, 0)
 
-        game.getUnit(id) shouldBe unit
+        game.getEntity(id) shouldBe unit
     }
 
     test("addUnit should add units to the game") {

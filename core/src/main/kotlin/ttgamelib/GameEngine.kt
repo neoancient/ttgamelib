@@ -128,12 +128,12 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
     }
 
     public open suspend fun removeEntity(clientId: Int, packet: RemoveEntityPacket) {
-        if (game.getUnit(packet.entityId)?.playerId == clientId) {
+        if (game.getEntity(packet.entityId)?.playerId == clientId) {
             game.removeUnit(packet.entityId)
             server.send(ALL_CLIENTS, packet)
-        } else if (game.getUnit(packet.entityId) != null) {
+        } else if (game.getEntity(packet.entityId) != null) {
             LoggerFactory.getLogger(javaClass)
-                .warn("Client $clientId attempted to remove unit belonging to player ${game.getUnit(packet.entityId)?.playerId}")
+                .warn("Client $clientId attempted to remove unit belonging to player ${game.getEntity(packet.entityId)?.playerId}")
         }
     }
 
