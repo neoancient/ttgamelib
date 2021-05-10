@@ -26,6 +26,8 @@ package ttgamelib.net
 
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.coVerify
+import io.mockk.spyk
 import ttgamelib.*
 
 private class TestEntity : Entity {
@@ -48,15 +50,60 @@ private class TestEngine : AbstractGameEngine<HexBoard, TestEntity, TestGame>("l
 }
 
 internal class AbstractGameEngineTest : FunSpec({
-    val connector = TestEngine()
+    val engine = spyk(TestEngine())
     val clientId = 1
     val player = Player(clientId, "Player1")
-    connector.game.addPlayer(player)
+    engine.game.addPlayer(player)
 
     test("UpdatePlayer command sets player values") {
         val newSettings = Player(player.id, player.name, team = 3)
-        connector.handle(clientId, UpdatePlayerPacket(newSettings))
+        engine.handle(clientId, UpdatePlayerPacket(newSettings))
 
         player.team shouldBe newSettings.team
+    }
+
+    test("PlayerReadyPacket should toggle ready status") {
+        engine.game.playerReady(clientId, false)
+        engine.handle(clientId, PlayerReadyPacket(clientId, true))
+
+        engine.game.getPlayer(clientId)?.ready shouldBe true
+    }
+
+    test("AddEntityPacket should add entity to player's force") {
+        val entity = TestEntity()
+        engine.handle(clientId, AddEntityPacket(entity))
+
+        entity.playerId shouldBe clientId
+        engine.game.getUnit(entity.unitId) shouldBe entity
+    }
+
+    test("RemoveEntityPacket should remove entity from game") {
+        val entity = TestEntity()
+        engine.game.addUnit(entity, clientId)
+
+        engine.handle(clientId, RemoveEntityPacket(entity.unitId))
+
+        engine.game.getUnit(entity.unitId) shouldBe null
+    }
+
+    test("SetBoardPacket should change board") {
+        val newBoard = HexBoard(25, 30)
+
+        engine.handle(clientId, SetBoardPacket(newBoard))
+
+        with (engine.game.board) {
+            width shouldBe 25
+            height shouldBe 30
+        }
+    }
+
+    test("GameCommandPacket should process command") {
+        val command = object : GameCommand {}
+
+        engine.handle(clientId, GameCommandPacket(command))
+
+        coVerify {
+            engine.handleCommand(clientId, command)
+        }
     }
 })
