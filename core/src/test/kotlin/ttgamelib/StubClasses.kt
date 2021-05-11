@@ -25,11 +25,13 @@
 package ttgamelib
 
 import io.mockk.slot
+import kotlinx.serialization.Serializable
 import ttgamelib.net.Packet
 
 /**
  * Simple Entity implementation for testing
  */
+@Serializable
 internal class TestEntity : Entity {
     override var entityId: Int = -1
     override var name: String = "Test Entity"
@@ -39,6 +41,7 @@ internal class TestEntity : Entity {
     override var elevation: Int = 0
 }
 
+@Serializable
 internal class TestGame : AbstractGame<HexBoard, TestEntity>() {
     override var board = HexBoard(10, 10)
 }

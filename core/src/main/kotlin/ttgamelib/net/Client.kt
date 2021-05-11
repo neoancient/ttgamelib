@@ -88,7 +88,9 @@ public class Client internal constructor(
 
     private suspend fun DefaultClientWebSocketSession.sendPackets() {
         for (packet in queue) {
-            send(Json.encodeToString(Packet.serializer(), packet))
+            send(Json {
+                serializersModule = Configuration.serializersModule
+            }.encodeToString(Packet.serializer(), packet))
         }
     }
 
@@ -97,7 +99,7 @@ public class Client internal constructor(
             for (frame in incoming) {
                 frame as? Frame.Text ?: continue
                 controller.handle(Json {
-                    Configuration.serializersModule
+                    serializersModule = Configuration.serializersModule
                 }.decodeFromString(Packet.serializer(), frame.readText()))
             }
         } catch (e: Exception) {

@@ -24,15 +24,35 @@
 
 package ttgamelib
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeTypeOf
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import ttgamelib.net.AddEntityPacket
+import ttgamelib.net.Packet
 
-/**
- * Global configuration properties for the library
- */
-public class Configuration {
-    public companion object {
-        public var serializersModule: SerializersModule = SerializersModule {
+internal class PacketTest : FunSpec({
 
+    val module = SerializersModule {
+        polymorphic(Entity::class) {
+            subclass(TestEntity::class, TestEntity.serializer())
         }
     }
-}
+
+    test("AddEntityPacket should deserialize Entity") {
+        val entity = TestEntity().apply {
+            entityId = 2
+            playerId = 4
+        }
+
+        val encoder = Json { serializersModule = module }
+        val json = encoder.encodeToString(Packet.serializer(), AddEntityPacket(entity))
+        val packet = encoder.decodeFromString(Packet.serializer(), json)
+
+        packet.shouldBeTypeOf<AddEntityPacket>()
+        packet.entity.entityId shouldBe entity.entityId
+        packet.entity.playerId shouldBe entity.playerId
+    }
+})
