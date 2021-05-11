@@ -30,15 +30,6 @@ import io.mockk.coVerify
 import io.mockk.spyk
 import ttgamelib.*
 
-private class TestEntity : Entity {
-    override var entityId: Int = -1
-    override var name: String = "Test Entity"
-    override var playerId: Int = -1
-    override var facing: Int = 0
-    override var primaryPosition: Coords? = null
-    override var elevation: Int = 0
-}
-
 private class TestGame : AbstractGame<HexBoard, TestEntity>() {
     override var board = HexBoard(10, 10)
 }

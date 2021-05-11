@@ -149,6 +149,11 @@ public interface Game<B: Board, E: Entity> {
      * If a listener has been added more than once, only one addition will be removed.
      */
     public fun removeListener(l: GameListener)
+
+    /**
+     * Adds listeners to another game and removes them from this one.
+     */
+    public fun transferListeners(other: Game<B, E>)
 }
 
 @Serializable
@@ -266,6 +271,13 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
 
     override fun removeListener(l: GameListener) {
         listeners.remove(l)
+    }
+
+    override fun transferListeners(other: Game<B, E>) {
+        listeners.forEach {
+            other.addListener(it)
+        }
+        listeners.clear()
     }
 }
 
