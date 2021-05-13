@@ -88,9 +88,13 @@ public class Client internal constructor(
 
     private suspend fun DefaultClientWebSocketSession.sendPackets() {
         for (packet in queue) {
-            send(Json {
-                serializersModule = Configuration.serializersModule
-            }.encodeToString(Packet.serializer(), packet))
+            try {
+                send(Json {
+                    serializersModule = Configuration.serializersModule
+                }.encodeToString(Packet.serializer(), packet))
+            } catch (e: Exception) {
+                println(e.localizedMessage)
+            }
         }
     }
 

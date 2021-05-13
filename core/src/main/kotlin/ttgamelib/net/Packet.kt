@@ -25,10 +25,7 @@
 package ttgamelib.net
 
 import kotlinx.serialization.Serializable
-import ttgamelib.Board
-import ttgamelib.Entity
-import ttgamelib.Game
-import ttgamelib.Player
+import ttgamelib.*
 
 internal const val ALL_CLIENTS = -1
 
@@ -153,6 +150,13 @@ public class RemoveEntityPacket(public val entityId: Int) : Packet()
  */
 @Serializable
 public class SetBoardPacket(public val board: Board) : Packet()
+
+/**
+ * Sent by the client to the server when a user has changed the weather settings.
+ * Sent by the server to the clients to notify of the change.
+ */
+@Serializable
+public class SetWeatherPacket(public val weather: Weather) : Packet()
 
 /**
  * Implemented by classes used to transmit game-specific commands between the server and client.

@@ -88,6 +88,17 @@ internal class AbstractGameEngineTest : FunSpec({
         }
     }
 
+    test("SetWeatherPacket should change weather") {
+        val newWeather = Weather(2, WindStrength.STRONG_WIND)
+
+        engine.handle(clientId, SetWeatherPacket(newWeather))
+
+        with (engine.game.weather) {
+            windDirection shouldBe 2
+            windStrength shouldBe WindStrength.STRONG_WIND
+        }
+    }
+
     test("GameCommandPacket should process command") {
         val command = object : GameCommand {}
 

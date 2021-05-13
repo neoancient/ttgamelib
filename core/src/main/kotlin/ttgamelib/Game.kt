@@ -31,6 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger
 
 public interface Game<B: Board, E: Entity> {
     public var board: B
+    public val weather: Weather
+
+    /**
+     * Changes the current weather settings to match [newWeather].
+     */
+    public fun setWeather(newWeather: Weather)
 
     /**
      * @return a collection of the [Player]s in the [Game]
@@ -158,17 +164,17 @@ public interface Game<B: Board, E: Entity> {
 
 @Serializable
 public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
-    public val weather: Weather = Weather()
+    override val weather: Weather = Weather()
     @Serializable(with = AtomicIntegerAsIntSerializer::class)
     private val nextUnitId = AtomicInteger(1)
-    private val players: MutableMap<Int, Player> = ConcurrentHashMap()
-    private val entities: MutableMap<Int, E> = ConcurrentHashMap()
-    private val listeners: MutableList<GameListener> = CopyOnWriteArrayList()
+    protected val players: MutableMap<Int, Player> = ConcurrentHashMap()
+    protected val entities: MutableMap<Int, E> = ConcurrentHashMap()
+    protected val listeners: MutableList<GameListener> = CopyOnWriteArrayList()
 
-    public fun setWeather(weather: Weather) {
+    override fun setWeather(newWeather: Weather) {
         with (this.weather) {
-            windDirection = weather.windDirection
-            windStrength = weather.windStrength
+            windDirection = newWeather.windDirection
+            windStrength = newWeather.windStrength
         }
         listeners.forEach {
             it.weatherChanged()

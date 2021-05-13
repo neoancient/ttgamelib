@@ -6,6 +6,7 @@ plugins {
 val kotlinVersion: String by project
 val ktorVersion: String by project
 val serializationVersion: String by project
+val coroutinesVersion: String by project
 val commonmarkVersion: String by project
 val slf4jVersion: String by project
 val junitVersion: String by project

@@ -97,9 +97,14 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
             is AddEntityPacket -> addEntity(clientId, packet)
             is RemoveEntityPacket -> removeEntity(clientId, packet)
             is SetBoardPacket -> setBoard(clientId, packet)
+            is SetWeatherPacket -> setWeather(clientId, packet)
             is GameCommandPacket -> handleCommand(clientId, packet.command)
             else -> LoggerFactory.getLogger(javaClass).warn("Received packet ${packet::class.simpleName} in GameEngine")
         }
+    }
+
+    public suspend fun send(clientId: Int, command: GameCommand) {
+        server.send(clientId, GameCommandPacket(command))
     }
 
     public open suspend fun updatePlayer(clientId: Int, packet: UpdatePlayerPacket) {
@@ -146,6 +151,11 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
             LoggerFactory.getLogger(javaClass)
                 .error("Attempted to add Entity of class ${packet.board::class.qualifiedName}")
         }
+    }
+
+    public open suspend fun setWeather(clientId: Int, packet: SetWeatherPacket) {
+        game.setWeather(packet.weather)
+        server.send(ALL_CLIENTS, packet)
     }
 
     public abstract suspend fun handleCommand(clientId: Int, command: GameCommand)

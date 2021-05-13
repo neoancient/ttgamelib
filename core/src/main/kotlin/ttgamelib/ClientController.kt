@@ -98,6 +98,8 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
         client.stop()
     }
 
+    public fun player(): Player = game.getPlayer(clientId) ?: error("Game does not have player for client $clientId")
+
     @Suppress("UNCHECKED_CAST")
     override suspend fun handle(packet: Packet) {
         when (packet) {
@@ -109,6 +111,7 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
 
             is InitClientPacket ->  {
                 clientId = packet.clientId
+                clientConnected()
                 clientListeners.forEach {
                     it.clientConnected(this)
                 }
@@ -129,13 +132,18 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
             is AddEntityPacket -> game.replaceUnit(packet.entity.entityId, packet.entity as E)
             is RemoveEntityPacket -> game.removeUnit(packet.entityId)
             is SetBoardPacket -> game.board = packet.board as B
+            is SetWeatherPacket -> game.setWeather(packet.weather)
             is GameCommandPacket -> handle(packet.command)
             else -> LoggerFactory.getLogger(javaClass).warn("Received packet ${packet::class.simpleName} in ${this::class.simpleName}")
         }
     }
 
-    public suspend fun send(packet: Packet) {
+    internal suspend fun send(packet: Packet) {
         client.send(packet)
+    }
+
+    public suspend fun send(command: GameCommand) {
+        client.send(GameCommandPacket(command))
     }
 
     override fun addConnectionListener(listener: ClientListener) {
@@ -150,4 +158,58 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
      * Processes a [command] received from the server.
      */
     public abstract suspend fun handle(command: GameCommand)
+
+    /**
+     * Changes the client name and notifies the server.
+     */
+    public suspend fun changeName(name: String) {
+        client.changeName(name)
+    }
+
+    public open suspend fun clientConnected() {
+    }
+
+    /**
+     * Attempts reconnect as an existing user.
+     */
+    public suspend fun reconnect() {
+        send(SendNamePacket(client.clientName, true))
+    }
+
+    /**
+     * Sends a chat message to the server.
+     */
+    public suspend fun sendChatMessage(text: String) {
+        send(ChatCommandPacket(clientId, text))
+    }
+
+    /**
+     * Sends new board settings to the server.
+     */
+    public suspend fun sendBoard(board: B) {
+        send(SetBoardPacket(board))
+    }
+
+    /**
+     * Sends new weather settings to the server.
+     */
+    public suspend fun sendWeather(weather: Weather) {
+        send(SetWeatherPacket(weather))
+    }
+
+    public suspend fun sendReady(ready: Boolean) {
+        send(PlayerReadyPacket(clientId, ready))
+    }
+
+    public suspend fun sendUpdatePlayer(player: Player) {
+        send(UpdatePlayerPacket(player))
+    }
+
+    public suspend fun addEntity(entity: E) {
+        send(AddEntityPacket(entity))
+    }
+
+    public suspend fun removeEntity(entityId: Int) {
+        send(RemoveEntityPacket(entityId))
+    }
 }

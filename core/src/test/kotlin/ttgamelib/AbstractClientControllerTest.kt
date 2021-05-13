@@ -162,6 +162,20 @@ internal class AbstractClientControllerTest : FunSpec({
         }
     }
 
+    test("SetWeatherPacket should change weather") {
+        val newWeather = Weather(3, WindStrength.GALE)
+
+        controller.handle(SetWeatherPacket(newWeather))
+
+        with (controller.game.weather) {
+            windDirection shouldBe 3
+            windStrength shouldBe WindStrength.GALE
+        }
+        coVerify {
+            gameListener.weatherChanged()
+        }
+    }
+
     test("GameCommandPacket should be sent to command handler") {
         val command = object : GameCommand {}
 
