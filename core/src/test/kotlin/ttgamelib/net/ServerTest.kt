@@ -137,7 +137,7 @@ internal class ServerTest : FunSpec({
     }
 
     test("GameCommandPacket should be sent to game engine") {
-        val packet = GameCommandPacket(object : GameCommand{})
+        val packet = MessagePacket(object : GameMessage{})
         server.handlePacket(packet, connection)
 
         sentPackets.shouldBeEmpty()

@@ -133,7 +133,7 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
             is RemoveEntityPacket -> game.removeUnit(packet.entityId)
             is SetBoardPacket -> game.board = packet.board as B
             is SetWeatherPacket -> game.setWeather(packet.weather)
-            is GameCommandPacket -> handle(packet.command)
+            is MessagePacket -> handle(packet.message)
             else -> LoggerFactory.getLogger(javaClass).warn("Received packet ${packet::class.simpleName} in ${this::class.simpleName}")
         }
     }
@@ -142,8 +142,8 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
         client.send(packet)
     }
 
-    public suspend fun send(command: GameCommand) {
-        client.send(GameCommandPacket(command))
+    public suspend fun send(message: GameMessage) {
+        client.send(MessagePacket(message))
     }
 
     override fun addConnectionListener(listener: ClientListener) {
@@ -155,9 +155,9 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
     }
 
     /**
-     * Processes a [command] received from the server.
+     * Processes a [message] received from the server.
      */
-    public abstract suspend fun handle(command: GameCommand)
+    public abstract suspend fun handle(message: GameMessage)
 
     /**
      * Changes the client name and notifies the server.

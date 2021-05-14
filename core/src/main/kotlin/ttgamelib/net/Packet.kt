@@ -73,10 +73,10 @@ internal class SuggestNamePacket(
 internal class InitClientPacket(val clientId: Int) : Packet()
 
 /**
- * Wrapper for game-specific commands
+ * Wrapper for game-specific messages between the client and the server.
  */
 @Serializable
-public class GameCommandPacket(public val command: GameCommand) : Packet()
+public class MessagePacket(public val message: GameMessage) : Packet()
 
 /**
  * Sent by the client to the server when a user enters a chat command
@@ -163,4 +163,4 @@ public class SetWeatherPacket(public val weather: Weather) : Packet()
  *
  * Implementing classes need to be serializable.
  */
-public interface GameCommand
+public interface GameMessage

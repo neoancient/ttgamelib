@@ -98,13 +98,13 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
             is RemoveEntityPacket -> removeEntity(clientId, packet)
             is SetBoardPacket -> setBoard(clientId, packet)
             is SetWeatherPacket -> setWeather(clientId, packet)
-            is GameCommandPacket -> handleCommand(clientId, packet.command)
+            is MessagePacket -> handleGameMessage(clientId, packet.message)
             else -> LoggerFactory.getLogger(javaClass).warn("Received packet ${packet::class.simpleName} in GameEngine")
         }
     }
 
-    public suspend fun send(clientId: Int, command: GameCommand) {
-        server.send(clientId, GameCommandPacket(command))
+    public suspend fun send(clientId: Int, message: GameMessage) {
+        server.send(clientId, MessagePacket(message))
     }
 
     public open suspend fun updatePlayer(clientId: Int, packet: UpdatePlayerPacket) {
@@ -158,5 +158,5 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
         server.send(ALL_CLIENTS, packet)
     }
 
-    public abstract suspend fun handleCommand(clientId: Int, command: GameCommand)
+    public abstract suspend fun handleGameMessage(clientId: Int, message: GameMessage)
 }

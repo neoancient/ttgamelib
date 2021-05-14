@@ -36,7 +36,7 @@ private class TestGame : AbstractGame<HexBoard, TestEntity>() {
 
 private class TestEngine : AbstractGameEngine<HexBoard, TestEntity, TestGame>("localhost", 1000) {
     override val game = TestGame()
-    override suspend fun handleCommand(clientId: Int, command: GameCommand) {
+    override suspend fun handleGameMessage(clientId: Int, message: GameMessage) {
     }
 }
 
@@ -100,12 +100,12 @@ internal class AbstractGameEngineTest : FunSpec({
     }
 
     test("GameCommandPacket should process command") {
-        val command = object : GameCommand {}
+        val command = object : GameMessage {}
 
-        engine.handle(clientId, GameCommandPacket(command))
+        engine.handle(clientId, MessagePacket(command))
 
         coVerify {
-            engine.handleCommand(clientId, command)
+            engine.handleGameMessage(clientId, command)
         }
     }
 })

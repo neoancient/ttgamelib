@@ -34,7 +34,7 @@ import ttgamelib.net.*
 private class TestController : AbstractClientController<HexBoard, TestEntity, TestGame>("test") {
     override var game = TestGame()
 
-    override suspend fun handle(command: GameCommand) {
+    override suspend fun handle(message: GameMessage) {
     }
 }
 
@@ -177,9 +177,9 @@ internal class AbstractClientControllerTest : FunSpec({
     }
 
     test("GameCommandPacket should be sent to command handler") {
-        val command = object : GameCommand {}
+        val command = object : GameMessage {}
 
-        controller.handle(GameCommandPacket(command))
+        controller.handle(MessagePacket(command))
 
         coVerify {
             controller.handle(command)
