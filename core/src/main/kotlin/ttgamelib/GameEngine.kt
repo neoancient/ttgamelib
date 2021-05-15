@@ -119,6 +119,7 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
 
     public open suspend fun playerReady(clientId: Int, packet: PlayerReadyPacket) {
         game.getPlayer(packet.playerId)?.ready = packet.ready
+        server.send(ALL_CLIENTS, packet)
     }
 
     @Suppress("UNCHECKED_CAST")
