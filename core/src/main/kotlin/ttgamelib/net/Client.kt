@@ -90,7 +90,7 @@ public class Client internal constructor(
         for (packet in queue) {
             try {
                 send(Json {
-                    serializersModule = Configuration.serializersModule
+                    serializersModule = Configuration.modules
                 }.encodeToString(Packet.serializer(), packet))
             } catch (e: Exception) {
                 println(e.localizedMessage)
@@ -103,7 +103,7 @@ public class Client internal constructor(
             for (frame in incoming) {
                 frame as? Frame.Text ?: continue
                 controller.handle(Json {
-                    serializersModule = Configuration.serializersModule
+                    serializersModule = Configuration.modules
                 }.decodeFromString(Packet.serializer(), frame.readText()))
             }
         } catch (e: Exception) {

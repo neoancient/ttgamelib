@@ -90,8 +90,9 @@ public class Server(
                     for (frame in incoming) {
                         frame as? Frame.Text ?: continue
                         handlePacket(Json {
-                            serializersModule = Configuration.serializersModule
-                        }.decodeFromString(Packet.serializer(), frame.readText()), thisConnection)
+                            serializersModule = Configuration.modules
+                        }.decodeFromString(Packet.serializer(),
+                            frame.readText()), thisConnection)
                     }
                 } catch (e: Exception) {
                     println(e.localizedMessage)
@@ -217,7 +218,7 @@ internal class ClientConnection(private val session: DefaultWebSocketSession) {
 
     suspend fun send(packet: Packet) {
         session.send(Frame.Text(Json {
-            serializersModule = Configuration.serializersModule
+            serializersModule = Configuration.modules
         }.encodeToString(Packet.serializer(), packet)))
     }
 }

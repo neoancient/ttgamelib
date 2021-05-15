@@ -25,14 +25,24 @@
 package ttgamelib
 
 import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.plus
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 /**
  * Global configuration properties for the library
  */
 public class Configuration {
     public companion object {
-        public var serializersModule: SerializersModule = SerializersModule {
+        internal val baseModule = SerializersModule {
+            polymorphic(Board::class) {
+                subclass(HexBoard::class)
+            }
+        }
+        internal var modules = baseModule
 
+        public fun addModule(module: SerializersModule) {
+            modules += module
         }
     }
 }
