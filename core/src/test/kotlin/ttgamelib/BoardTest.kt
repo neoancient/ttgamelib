@@ -41,7 +41,7 @@ internal class BoardTest : FunSpec({
             10, 10,
             defaultHex = Terrain(TerrainType.ROCKS, 0, 2)
         )
-        val (terrain, depth, elevation) = testBoard.getHex(4, 4)
+        val (terrain, depth, elevation) = testBoard.getTerrain(4, 4)
 
         terrain shouldBe TerrainType.ROCKS
         depth shouldBe 0
@@ -62,7 +62,7 @@ internal class BoardTest : FunSpec({
             row(1, 2, TerrainType.REEF),
             row(4, 4, TerrainType.SEA)
         ) { col, row, terrain ->
-            testBoard.getHex(col, row).terrain shouldBe terrain
+            testBoard.getTerrain(col, row).terrain shouldBe terrain
         }
     }
 

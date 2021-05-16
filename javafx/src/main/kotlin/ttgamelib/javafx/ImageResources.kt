@@ -25,19 +25,23 @@
 package ttgamelib.javafx
 
 import javafx.scene.image.Image
+import ttgamelib.Terrain
 import ttgamelib.TerrainType
 import ttgamelib.WindStrength
 
 private const val IMAGE_DIR = "images"
 
+private val terrainHexes = HashMap<TerrainType, Image>()
+
 /**
  * Retrieves an image for a hex with the terrain type, or null if none is available.
  */
 public fun TerrainType.hexFor(): Image? {
-    return ClassLoader.getSystemResourceAsStream("$IMAGE_DIR/terrain/${name.toLowerCase()}.png")?.let {
-        Image(it)
+    return terrainHexes[this] ?:
+        Image(ClassLoader.getSystemResourceAsStream("$IMAGE_DIR/terrain/${name.toLowerCase()}.png"))?.apply {
+            terrainHexes[this@hexFor] = this
+        }
     }
-}
 
 /**
  * Retrieves an image for an icon indicating wind speed, or null if none is available.

@@ -54,7 +54,7 @@ public interface Board {
      * @param row    The row index for the position
      * @return       The map features at the given coordinates
      */
-    public fun getHex(col: Int, row: Int): Terrain
+    public fun getTerrain(col: Int, row: Int): Terrain
 
     /**
      * Find the X coordinate of the position using Cartesian coordinates
@@ -100,7 +100,7 @@ public class HexBoard(
 
     override operator fun get(coords: Coords): Terrain = hexes[coords] ?: defaultHex
 
-    override fun getHex(col: Int, row: Int): Terrain = get(createCoords(col, row))
+    override fun getTerrain(col: Int, row: Int): Terrain = get(createCoords(col, row))
 
     override fun distanceToEdge(coords: Coords, edge: BoardEdge): Int {
         return when (edge) {
