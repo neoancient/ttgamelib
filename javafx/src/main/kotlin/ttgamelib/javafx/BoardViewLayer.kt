@@ -33,6 +33,9 @@ internal const val HEX_HEIGHT = 156.0
 internal const val HEX_DX = HEX_WIDTH * 0.75
 internal const val MAP_BORDER = HEX_WIDTH * 2
 
+/**
+ * Base for classes that draw a layer in [BoardView].
+ */
 public abstract class BoardViewLayer<B: BoardModel>(protected val board: B) : Canvas() {
     protected abstract val borderX: List<Double>
     protected abstract val borderY: List<Double>
@@ -60,6 +63,9 @@ public abstract class BoardViewLayer<B: BoardModel>(protected val board: B) : Ca
     protected fun rowFor(y: Double): Double = (y - MAP_BORDER) / HEX_HEIGHT
 }
 
+/**
+ * Base class for [BoardView] layers using a hex grid.
+ */
 public abstract class HexBoardViewLayer(board: HexBoardModel) : BoardViewLayer<HexBoardModel>(board) {
     override val borderX: List<Double> = listOf(HEX_WIDTH * 0.25, HEX_WIDTH * 0.75, HEX_WIDTH,
         HEX_WIDTH * 0.75, HEX_WIDTH * 0.25, 0.0)

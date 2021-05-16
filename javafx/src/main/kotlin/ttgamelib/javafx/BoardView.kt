@@ -29,9 +29,18 @@ import javafx.scene.transform.Affine
 import tornadofx.*
 import kotlin.math.min
 
-
+/**
+ * Draws the game board.
+ *
+ * This is a container and manager for layers that responsible for various aspects of the
+ * board appearance. Typically there will be a layer for drawing the terrain, one for
+ * drawing the grid, and one for drawing the [Entity] sprites. The layers are added
+ * by calling [setLayers] after the view is created.
+ *
+ * @param B The type of the board model used by the layers.
+ */
 public class BoardView<B: BoardModel> : Fragment() {
-    internal val board: BoardModel by param()
+    public val board: BoardModel by param()
 
     private val viewportWidthProperty = SimpleDoubleProperty()
     private val viewportHeightProperty = SimpleDoubleProperty()
@@ -87,6 +96,13 @@ public class BoardView<B: BoardModel> : Fragment() {
         }
     }
 
+    /**
+     * Adds the board layers to the container.
+     *
+     * Layers appearing later in [list] will be drawn on top of previous ones.
+     *
+     * @param list The layers that make up the board display.
+     */
     public fun setLayers(list: List<BoardViewLayer<B>>) {
         list.forEach {
             layers.add(it)

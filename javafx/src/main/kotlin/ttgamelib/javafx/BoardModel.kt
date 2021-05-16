@@ -30,32 +30,38 @@ import tornadofx.*
 import ttgamelib.*
 
 /**
- *
+ * The model for the game board, used for editing and display.
  */
 public interface BoardModel : Board {
+
+    public var currentBoard: HexBoard
     public val widthProperty: IntegerProperty
     public val heightProperty: IntegerProperty
     public val dirty: ObservableBooleanValue
+    public fun createBoard(): Board
 }
 
-public class HexBoardModel(board: HexBoard) : BoardModel {
-    override val widthProperty: IntegerProperty = SimpleIntegerProperty(board.width)
+/**
+ * [BoardModel] for a hex board
+ */
+public class HexBoardModel(override var currentBoard: HexBoard) : BoardModel {
+    override val widthProperty: IntegerProperty = SimpleIntegerProperty(currentBoard.width)
     override var width: Int by widthProperty
-    override val heightProperty: IntegerProperty = SimpleIntegerProperty(board.height)
+    override val heightProperty: IntegerProperty = SimpleIntegerProperty(currentBoard.height)
     override val height: Int by heightProperty
-    public val verticalGridProperty: BooleanProperty = SimpleBooleanProperty(board.verticalGrid)
+    public val verticalGridProperty: BooleanProperty = SimpleBooleanProperty(currentBoard.verticalGrid)
     public var verticalGrid: Boolean by verticalGridProperty
-    public val oddOffsetProperty: BooleanProperty = SimpleBooleanProperty(board.oddOffset)
+    public val oddOffsetProperty: BooleanProperty = SimpleBooleanProperty(currentBoard.oddOffset)
     public var oddOffset: Boolean by oddOffsetProperty
-    public val defaultHexProperty: ObjectProperty<Terrain> = SimpleObjectProperty(board.defaultHex)
+    public val defaultHexProperty: ObjectProperty<Terrain> = SimpleObjectProperty(currentBoard.defaultHex)
     public var defaultHex: Terrain by defaultHexProperty
-    public val hexes: ObservableMap<HexCoords, Terrain> = board.exportHexes().toObservable()
+    public val hexes: ObservableMap<HexCoords, Terrain> = currentBoard.exportHexes().toObservable()
 
-    override val dirty: ObservableBooleanValue = widthProperty.isNotEqualTo(board.width)
-        .or(heightProperty.isNotEqualTo(board.height))
-        .or(verticalGridProperty.eq(board.verticalGrid).not())
-        .or(oddOffsetProperty.eq(board.oddOffset).not())
-        .or(!hexes.equals(board.exportHexes()))
+    override val dirty: ObservableBooleanValue = widthProperty.isNotEqualTo(currentBoard.width)
+        .or(heightProperty.isNotEqualTo(currentBoard.height))
+        .or(verticalGridProperty.eq(currentBoard.verticalGrid).not())
+        .or(oddOffsetProperty.eq(currentBoard.oddOffset).not())
+        .or(!hexes.equals(currentBoard.exportHexes()))
 
     override fun getTerrain(col: Int, row: Int): Terrain =
         get(HexCoords.createFromOffset(col, row, verticalGrid, oddOffset))
@@ -66,6 +72,6 @@ public class HexBoardModel(board: HexBoard) : BoardModel {
         return createBoard().distanceToEdge(coords, edge)
     }
 
-    public fun createBoard(): HexBoard =
+    override fun createBoard(): Board =
         HexBoard(width, height, verticalGrid, oddOffset, defaultHex, hexes)
 }

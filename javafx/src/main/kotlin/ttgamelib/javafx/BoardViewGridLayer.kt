@@ -23,10 +23,8 @@
 
 package ttgamelib.javafx
 
-import javafx.scene.paint.Color
-
 /**
- *
+ * A [Canvas] that draws a hex grid in the [BoardView].
  */
 public class HexBoardViewGridLayer(board: HexBoardModel) : HexBoardViewLayer(board) {
 

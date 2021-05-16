@@ -26,7 +26,7 @@ package ttgamelib.javafx
 import javafx.scene.paint.Color
 
 /**
- *
+ * [BoardView] layer that draws the terrain tiles for a hex board.
  */
 public class HexBoardViewMapLayer(board: HexBoardModel) : HexBoardViewLayer(board) {
     override fun drawCells(firstCol: Int, lastCol: Int, firstRow: Int, lastRow: Int) {
