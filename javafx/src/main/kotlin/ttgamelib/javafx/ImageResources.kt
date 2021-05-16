@@ -38,7 +38,7 @@ private val terrainHexes = HashMap<TerrainType, Image>()
  */
 public fun TerrainType.hexFor(): Image? {
     return terrainHexes[this] ?:
-        Image(ClassLoader.getSystemResourceAsStream("$IMAGE_DIR/terrain/${name.toLowerCase()}.png"))?.apply {
+        Image(ClassLoader.getSystemResourceAsStream("$IMAGE_DIR/terrain/${name.toLowerCase()}.png")).apply {
             terrainHexes[this@hexFor] = this
         }
     }
