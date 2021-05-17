@@ -129,8 +129,8 @@ public abstract class AbstractClientController<B: Board, E: Entity, G: Game<B, E
             is UpdatePlayerPacket -> game.updatePlayer(packet.player.id, packet.player)
             is PlayerReadyPacket -> game.playerReady(packet.playerId, packet.ready)
             is PlayerDisconnectionPacket -> game.playerDisconnected(packet.playerId, packet.disconnected)
-            is AddEntityPacket -> game.replaceUnit(packet.entity.entityId, packet.entity as E)
-            is RemoveEntityPacket -> game.removeUnit(packet.entityId)
+            is AddEntityPacket -> game.replaceEntity(packet.entity.entityId, packet.entity as E)
+            is RemoveEntityPacket -> game.removeEntity(packet.entityId)
             is SetBoardPacket -> game.board = packet.board as B
             is SetWeatherPacket -> game.setWeather(packet.weather)
             is MessagePacket -> handle(packet.message)

@@ -125,7 +125,7 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
     @Suppress("UNCHECKED_CAST")
     public open suspend fun addEntity(clientId: Int, packet: AddEntityPacket) {
         try {
-            game.addUnit(packet.entity as E, clientId)
+            game.addEntity(packet.entity as E, clientId)
             server.send(ALL_CLIENTS, packet)
         } catch (e: ClassCastException) {
             LoggerFactory.getLogger(javaClass)
@@ -135,7 +135,7 @@ public abstract class AbstractGameEngine<B: Board, E: Entity, G: Game<B, E>>(
 
     public open suspend fun removeEntity(clientId: Int, packet: RemoveEntityPacket) {
         if (game.getEntity(packet.entityId)?.playerId == clientId) {
-            game.removeUnit(packet.entityId)
+            game.removeEntity(packet.entityId)
             server.send(ALL_CLIENTS, packet)
         } else if (game.getEntity(packet.entityId) != null) {
             LoggerFactory.getLogger(javaClass)

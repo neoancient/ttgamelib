@@ -103,27 +103,27 @@ public interface Game<B: Board, E: Entity> {
     public fun getPlayer(playerId: Int): Player?
 
     /**
-     * Initializes a [unit], assigns a unit id and a [playerId], and adds it to the game.
+     * Initializes a [entity], assigns a entity id and a [playerId], and adds it to the game.
      *
-     * @return the id assigned to the unit
+     * @return the id assigned to the entity
      */
-    public fun addUnit(unit: E, playerId: Int): Int
+    public fun addEntity(entity: E, playerId: Int): Int
 
     /**
-     * Add an initialized [unit] to the game with [unitId]. If there is already
-     * a unit with this id, it is replaced.
+     * Add an initialized [entity] to the game with [entityId]. If there is already
+     * an entity with this id, it is replaced.
      *
-     * @return the id of the [unit]
+     * @return the id of the [entity]
      */
-    public fun replaceUnit(unitId: Int, unit: E): Int
+    public fun replaceEntity(entityId: Int, entity: E): Int
 
     /**
-     * Removes a unit from the game and notifies listeners
+     * Removes an entity from the game and notifies listeners
      *
-     * @param unitId the id of the unit to remove
-     * @return the unit removed, or null if there was no unit in the game with that id
+     * @param entityId the id of the entity to remove
+     * @return the entity removed, or null if there was no entity in the game with that id
      */
-    public fun removeUnit(unitId: Int): E?
+    public fun removeEntity(entityId: Int): E?
 
     /**
      * Appends [text] to the game chat
@@ -131,16 +131,16 @@ public interface Game<B: Board, E: Entity> {
     public fun appendChat(text: String)
 
     /**
-     * Lookup for unit by id.
+     * Lookup for entity by id.
      *
-     * @return the unit with [unitId], or null if there is no unit in the game with that id
+     * @return the entity with [entityId], or null if there is no entity in the game with that id
      */
-    public fun getEntity(unitId: Int): E?
+    public fun getEntity(entityId: Int): E?
 
     /**
-     * @return a [Collection] of all the units in the game
+     * @return a [Collection] of all the entities in the game
      */
-    public fun allUnits(): Collection<E>
+    public fun allEntities(): Collection<E>
 
     /**
      * Adds a listener to be notified of game events.
@@ -166,7 +166,7 @@ public interface Game<B: Board, E: Entity> {
 public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
     override val weather: Weather = Weather()
     @Serializable(with = AtomicIntegerAsIntSerializer::class)
-    private val nextUnitId = AtomicInteger(1)
+    private val nextEntityId = AtomicInteger(1)
     protected val players: MutableMap<Int, Player> = ConcurrentHashMap()
     protected val entities: MutableMap<Int, E> = ConcurrentHashMap()
     protected val listeners: MutableList<GameListener> = CopyOnWriteArrayList()
@@ -235,41 +235,41 @@ public abstract class AbstractGame<B: Board, E: Entity> : Game<B, E> {
     override fun getPlayer(playerId: Int): Player? = players[playerId]
 
     /**
-     * Initializes a [unit], assigns a unit id and a [playerId], and adds it to the game.
+     * Initializes a [entity], assigns an entity id and a [playerId], and adds it to the game.
      * Returns the assigned id.
      */
-    override fun addUnit(unit: E, playerId: Int): Int {
-        unit.initGameState(nextUnitId.getAndIncrement())
-        unit.playerId = playerId
-        return replaceUnit(unit.entityId, unit)
+    override fun addEntity(entity: E, playerId: Int): Int {
+        entity.initGameState(nextEntityId.getAndIncrement())
+        entity.playerId = playerId
+        return replaceEntity(entity.entityId, entity)
     }
 
     /**
-     * Add an initialized [unit] to the game with [unitId]. If there is already
-     * a unit with this id, it is replaced.
+     * Add an initialized [entity] to the game with [entityId]. If there is already
+     * an entity with this id, it is replaced.
      */
-    override fun replaceUnit(unitId: Int, unit: E): Int {
-        unit.entityId = unitId
-        entities[unitId] = unit
-        listeners.forEach { it.unitAdded(unitId) }
-        return unitId
+    override fun replaceEntity(entityId: Int, entity: E): Int {
+        entity.entityId = entityId
+        entities[entityId] = entity
+        listeners.forEach { it.entityAdded(entityId) }
+        return entityId
     }
 
-    override fun removeUnit(unitId: Int): E? {
-        val unit = entities.remove(unitId)
-        if (unit != null) {
-            listeners.forEach { it.unitRemoved(unitId) }
+    override fun removeEntity(entityId: Int): E? {
+        val entity = entities.remove(entityId)
+        if (entity != null) {
+            listeners.forEach { it.entityRemoved(entityId) }
         }
-        return unit
+        return entity
     }
 
     override fun appendChat(text: String) {
         listeners.forEach { it.appendChat(text) }
     }
 
-    override fun getEntity(unitId: Int): E? = entities[unitId]
+    override fun getEntity(entityId: Int): E? = entities[entityId]
 
-    override fun allUnits(): Collection<E> = entities.values
+    override fun allEntities(): Collection<E> = entities.values
 
     override fun addListener(l: GameListener) {
         listeners.add(l)
@@ -296,8 +296,8 @@ public interface GameListener {
     public fun playerChanged(playerId: Int)
     public fun playerReady(playerId: Int, ready: Boolean) {}
     public fun playerDisconnected(playerId: Int, disconnected: Boolean) {}
-    public fun unitAdded(unitId: Int)
-    public fun unitRemoved(unitId: Int)
+    public fun entityAdded(entityId: Int)
+    public fun entityRemoved(entityId: Int)
     public fun appendChat(text: String)
     public fun boardChanged() {}
     public fun weatherChanged() {}

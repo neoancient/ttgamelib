@@ -54,7 +54,7 @@ internal class AbstractGameTest : FunSpec({
 
     test("unit lookup should find unit by id") {
         val unit = TestEntity()
-        val id = game.addUnit(unit, 0)
+        val id = game.addEntity(unit, 0)
 
         game.getEntity(id) shouldBe unit
     }
@@ -64,10 +64,10 @@ internal class AbstractGameTest : FunSpec({
         val unit2 = TestEntity().apply {
             name = "Test Entity 2"
         }
-        game.addUnit(unit1, 0)
-        game.addUnit(unit2, 0)
+        game.addEntity(unit1, 0)
+        game.addEntity(unit2, 0)
 
-        game.allUnits().shouldContainExactlyInAnyOrder(unit1, unit2)
+        game.allEntities().shouldContainExactlyInAnyOrder(unit1, unit2)
     }
 
     test("addPlayer should notify listener") {

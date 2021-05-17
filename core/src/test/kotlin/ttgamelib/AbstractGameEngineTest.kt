@@ -70,7 +70,7 @@ internal class AbstractGameEngineTest : FunSpec({
 
     test("RemoveEntityPacket should remove entity from game") {
         val entity = TestEntity()
-        engine.game.addUnit(entity, clientId)
+        engine.game.addEntity(entity, clientId)
 
         engine.handle(clientId, RemoveEntityPacket(entity.entityId))
 
